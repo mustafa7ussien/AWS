@@ -1,22 +1,20 @@
-# Connect NLB with two instances
-# Connect ALB with two Instances
-# Connect NLB with ALB
+#   Auto Scaling Group with ALB & NLB
 
--   ![alt](./images/loadblancer.PNG)
+-   ![alt](./images/asg.PNG)
 
-## Ans:
-
--   1- Create VPC  fast way => VPC and more(will create vpc and  subnet and route table)
-    -   CIDR => 10.0.0.0/16
-    -   choose number of subnet 2 public and 2 private
-    -   Edit subnet settings =>  auto assign public ip
--   1-install web server in ec2
-    -   create ec2
-        -   name => web1
-        -   select keypair
-        -   select vpc and subnet
-        -   create secuirty group => add role open port 80 http  source anywere 0.0.0.0/0
-        - advanced details and insert code in user data to install httpd
+-   Auto Scaling Group
+-   Create ASG
+    -   name => asg
+    -   Create a Launch template
+        -   name => mytemplate
+        -   os image => Amazon linux
+        -   instance type => t2.micro
+        -   keypair select
+        -   create security group
+            -   name => asg-sg
+            -   select vpc
+            -   open http 
+            -   open ssh
         -   run shell script in boot of instance
 
         ```bash
@@ -33,52 +31,66 @@
         
         ```
 
-        -   Launch Instance
-    2-install web2 server in ec2 in the same pervious way but in another subnet
-
-
-    -   3-create Loadblancer  [Application Load blancer]
+    -   create lanuch template
+-   Select template
+-   next and choose vpc and public subnet
+-   next and load balancing => attach new load balancer
+    -   select application load balancer
         -   name => alb
-        -   scheme => Internet facing
+        -   scheme => internet facing
         -   select vpc
-        -   mapping trafic in all avalibilty zone
-        -   create secuirty group and select it
-            -   name => lb-sg
-            -   select vpc
-            -   add rule => open port http
-        -   Listner and routing 
-            -   traffic port 80 will send to "target group"(connect load balncer with instance)
-            -   creat target group  and select
-                -   type => instances
-                -   name => alb-tg
-                -   select vpc
-                -   next and register target
-                -   select instances and include as pending below
-                -   creat target group
-        -   creat load balncer
-
-    -   copy dns record of load blancer and run in browser
-    -   will route traffic between this two instances
-    -   ![alt](./images/application%20loadbalancer.PNG)
-
--   create Network load balncer 
-    -   name => nlb
-    -   scheme => internet facing
-    -   select vpc
-    -   mapping trafic in all avalibilty zone
-    -   select secuirty group
-    -   create target group  and select
-        -   type => instances
-        -   name => nlb-tg
-        -   select vpc
-        -   next and register targets
         -   create target group
-    -   create load balncer
--   copy dns record of load blancer and run in browser
--   will route traffic between this two instances
--   ![alt](./images/network%20loadblancer.PNG)
+            -   name => asg-alb-tg
+            -   turn on elastic load balancer
+        -   next and configure size and scaling desire 2 ,  min 1, max 3
+        -   next and add notification
+            -   create topic
+                -    choose standard
+                -   name => mytopic
+            -   create subscibtion to connect topic with email
+                -   protocol => email
+                -   End point => moustafa.hussieen@gmail.com
+                -   create subscribtion
+            -   select topic
+        -   next and create auto scaling group
+    -   finally will create two instances if one of them down will another will provisiong in mill seconds
+-   ![alt](./images/auto%20scalling%20group%20load%20balancer.PNG)
 
 
+-   create Auto Scaling group- Network Load balancer
+    -   select template
+    -   next vpc and subnet
+    -   Attach new load balancer
+        -   Network load balancer
+            -   name => asg-nlb
+            -   internet facing
+            -   create target group
+                -   asg-nlb-tg
+                -   turn on elastic load balancer
+                -   next scaling  desire 2, min 1, max 3
+                -   next add notification
+                -   select topic
+-   create
+-   ![alt](./images/asg-%20network%20load%20blancer.PNG)
+-   ![alt](./images/app,%20network.PNG)
+-   ![alt](./images/asg%20network%20and%20asg%20app.PNG)
+
+
+-   connect NLB to ALB
+    -   in load balancer in listner => add listener
+        -   create target group
+            -   application load balancer
+            -   name => nlb-to- alb
+            -   next select alb
+            -   create tg
+    -   select tg
+-   port 81 and slect tg => listner lisyen port 81 any request 81 go to alb
+
+-   ![alt](./images/add%20listner%20target%20group%20to%20link%20nlb%20to%20alb%20on%20port%2081%20.PNG)
+
+
+
+            
 
 
             
